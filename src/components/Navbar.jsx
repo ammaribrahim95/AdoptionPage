@@ -8,7 +8,7 @@ export default function Navbar() {
         <nav className="bg-white shadow-md sticky top-0 z-50">
             <div className="container mx-auto px-4 py-3 flex justify-between items-center">
                 <Link to="/" className="text-2xl font-bold text-teal-600 flex items-center gap-2">
-                    🐾 The Apawstrophe
+                    🐾 The A Pawstrophe
                 </Link>
                 <div className="hidden md:flex gap-6 items-center">
                     <Link to="/" className="text-slate-600 hover:text-teal-600 font-medium">Home</Link>
