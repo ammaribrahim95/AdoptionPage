@@ -1,9 +1,10 @@
 import { Calendar, Heart } from 'lucide-react'
+import { calculateDynamicAge } from '../utils/helpers'
 
 export default function PetCard({ pet, isAdopted = false }) {
     const statusColors = {
         available: 'bg-green-100 text-green-700',
-        adopted: 'bg-purple-100 text-purple-700',
+        adopted: 'bg-brand-lighter/50 text-brand',
     }
 
     return (
@@ -31,11 +32,11 @@ export default function PetCard({ pet, isAdopted = false }) {
                     </span>
                 </div>
 
-                <p className="text-sm text-slate-500 mb-4">{pet.breed} • {pet.age} old</p>
+                <p className="text-sm text-slate-500 mb-4">{pet.breed} • {calculateDynamicAge(pet.date_of_birth)}</p>
 
                 {isAdopted ? (
-                    <div className="mt-4 p-3 bg-purple-50 rounded-lg">
-                        <p className="text-sm text-purple-800 italic">
+                    <div className="mt-4 p-3 bg-brand-lighter/20 rounded-lg">
+                        <p className="text-sm text-brand-light font-medium italic">
                             "Find happiness in your new home, {pet.name}!"
                         </p>
                     </div>
@@ -46,7 +47,7 @@ export default function PetCard({ pet, isAdopted = false }) {
                 )}
 
                 {!isAdopted && (
-                    <button className="w-full mt-4 bg-teal-500 hover:bg-teal-600 text-white py-2 rounded-lg font-medium transition flex items-center justify-center gap-2">
+                    <button className="w-full mt-4 bg-brand hover:bg-brand-light text-white py-2 rounded-lg font-medium transition flex items-center justify-center gap-2">
                         <Heart size={18} /> Adopt Me
                     </button>
                 )}

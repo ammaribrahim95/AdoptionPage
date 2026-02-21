@@ -2,11 +2,14 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../services/supabaseClient'
 import { ArrowLeft, Check, Calendar, Heart } from 'lucide-react'
+import { calculateDynamicAge } from '../utils/helpers'
+import AdoptionFormModal from '../components/AdoptionFormModal'
 
 export default function PetDetails() {
     const { id } = useParams()
     const [pet, setPet] = useState(null)
     const [loading, setLoading] = useState(true)
+    const [isApplyModalOpen, setIsApplyModalOpen] = useState(false)
 
     useEffect(() => {
         const fetchPet = async () => {
@@ -38,15 +41,15 @@ export default function PetDetails() {
                         className="w-full h-full object-cover"
                     />
                     {isAdopted && (
-                        <div className="absolute inset-0 bg-purple-900/40 flex items-center justify-center">
-                            <span className="bg-white text-purple-800 px-6 py-2 rounded-full font-bold text-xl uppercase tracking-widest shadow-lg transform -rotate-12">
+                        <div className="absolute inset-0 bg-brand-lighter/60 flex items-center justify-center">
+                            <span className="bg-white text-brand px-6 py-2 rounded-full font-bold text-xl uppercase tracking-widest shadow-lg transform -rotate-12">
                                 Adopted!
                             </span>
                         </div>
                     )}
                 </div>
                 <div className="p-8 md:w-1/2 flex flex-col">
-                    <Link to="/available" className="inline-flex items-center text-slate-500 hover:text-teal-600 mb-6 transition">
+                    <Link to="/available" className="inline-flex items-center text-slate-500 hover:text-brand mb-6 transition">
                         <ArrowLeft size={16} className="mr-1" /> Back to Available Pets
                     </Link>
 
@@ -65,7 +68,7 @@ export default function PetDetails() {
                     <div className="grid grid-cols-2 gap-4 mb-6 text-sm text-slate-600">
                         <div className="bg-slate-50 p-3 rounded-lg">
                             <span className="block text-slate-400 text-xs uppercase font-bold">Age</span>
-                            {pet.age} old
+                            {calculateDynamicAge(pet.date_of_birth)}
                         </div>
                         <div className="bg-slate-50 p-3 rounded-lg">
                             <span className="block text-slate-400 text-xs uppercase font-bold">Posted</span>
@@ -79,21 +82,26 @@ export default function PetDetails() {
                     </div>
 
                     {!isAdopted ? (
-                        <a
-                            href={`https://wa.me/60127953577?text=Hi, I am interested in adopting ${pet.name}!`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-4 rounded-xl shadow-md hover:shadow-lg transition text-center flex items-center justify-center gap-2"
+                        <button
+                            onClick={() => setIsApplyModalOpen(true)}
+                            className="w-full bg-brand hover:bg-brand-light text-white font-bold py-4 rounded-xl shadow-md hover:shadow-lg transition text-center flex items-center justify-center gap-2"
                         >
                             <Heart className="fill-current" /> I want to Adopt {pet.name}
-                        </a>
+                        </button>
                     ) : (
-                        <div className="bg-purple-50 p-4 rounded-xl text-center">
-                            <p className="text-purple-800 font-medium">This pet has found a loving home. ❤️</p>
+                        <div className="bg-brand-lighter/20 p-4 rounded-xl text-center">
+                            <p className="text-brand font-medium">This pet has found a loving home. ❤️</p>
                         </div>
                     )}
                 </div>
             </div>
+
+            {isApplyModalOpen && (
+                <AdoptionFormModal
+                    pet={pet}
+                    onClose={() => setIsApplyModalOpen(false)}
+                />
+            )}
         </div>
     )
 }

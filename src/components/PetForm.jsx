@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { supabase } from '../services/supabaseClient'
 import { Upload, X } from 'lucide-react'
+import { calculateDobFromAge } from '../utils/helpers'
 
 export default function PetForm({ pet = {}, onSuccess, onCancel }) {
     const [formData, setFormData] = useState({
         name: pet.name || '',
-        age: pet.age || '',
+        date_of_birth: pet.date_of_birth || '',
         gender: pet.gender || 'Unknown',
         breed: pet.breed || '',
         description: pet.description || '',
@@ -15,6 +16,19 @@ export default function PetForm({ pet = {}, onSuccess, onCancel }) {
     const [imageFile, setImageFile] = useState(null)
     const [uploading, setUploading] = useState(false)
     const [loading, setLoading] = useState(false)
+
+    // State for approx age calculator
+    const [approxAgeValue, setApproxAgeValue] = useState('')
+    const [approxAgeUnit, setApproxAgeUnit] = useState('months')
+
+    const handleSetApproxAge = () => {
+        const dob = calculateDobFromAge(approxAgeValue, approxAgeUnit)
+        if (dob) {
+            setFormData(prev => ({ ...prev, date_of_birth: dob }))
+            setApproxAgeValue('')
+            // Optional: minimal alert or notification could go here if needed
+        }
+    }
 
     const handleChange = (e) => {
         const { name, value } = e.target
@@ -105,19 +119,50 @@ export default function PetForm({ pet = {}, onSuccess, onCancel }) {
                                 value={formData.name}
                                 onChange={handleChange}
                                 required
-                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
+                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand outline-none"
                             />
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">Age</label>
-                            <input
-                                type="text"
-                                name="age"
-                                value={formData.age}
-                                onChange={handleChange}
-                                placeholder="e.g. 2 years"
-                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
-                            />
+                        <div className="flex flex-col gap-2">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Date of Birth</label>
+                                <input
+                                    type="date"
+                                    name="date_of_birth"
+                                    value={formData.date_of_birth}
+                                    onChange={handleChange}
+                                    max={new Date().toISOString().split('T')[0]}
+                                    required
+                                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand outline-none"
+                                />
+                            </div>
+                            <div className="p-3 bg-slate-50 border border-slate-100 rounded-lg">
+                                <label className="block text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-wide">Or Calculate Approximate DOB</label>
+                                <div className="flex gap-2 items-center">
+                                    <input
+                                        type="number"
+                                        value={approxAgeValue}
+                                        onChange={(e) => setApproxAgeValue(e.target.value)}
+                                        placeholder="Age"
+                                        min="0"
+                                        className="w-16 px-2 py-1.5 text-sm border border-slate-300 rounded-md focus:ring-1 focus:ring-brand outline-none"
+                                    />
+                                    <select
+                                        value={approxAgeUnit}
+                                        onChange={(e) => setApproxAgeUnit(e.target.value)}
+                                        className="flex-1 px-2 py-1.5 text-sm border border-slate-300 rounded-md focus:ring-1 focus:ring-brand outline-none bg-white"
+                                    >
+                                        <option value="months">Months</option>
+                                        <option value="years">Years</option>
+                                    </select>
+                                    <button
+                                        type="button"
+                                        onClick={handleSetApproxAge}
+                                        className="px-3 py-1.5 bg-brand/10 hover:bg-brand/20 text-brand text-sm font-bold rounded-md transition"
+                                    >
+                                        Calculate
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1">Gender</label>
@@ -125,7 +170,7 @@ export default function PetForm({ pet = {}, onSuccess, onCancel }) {
                                 name="gender"
                                 value={formData.gender}
                                 onChange={handleChange}
-                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
+                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand outline-none"
                             >
                                 <option value="Male">Male</option>
                                 <option value="Female">Female</option>
@@ -139,7 +184,7 @@ export default function PetForm({ pet = {}, onSuccess, onCancel }) {
                                 name="breed"
                                 value={formData.breed}
                                 onChange={handleChange}
-                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
+                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand outline-none"
                             />
                         </div>
                     </div>
@@ -151,7 +196,7 @@ export default function PetForm({ pet = {}, onSuccess, onCancel }) {
                             value={formData.description}
                             onChange={handleChange}
                             rows="4"
-                            className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
+                            className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand outline-none"
                         ></textarea>
                     </div>
 
@@ -162,7 +207,7 @@ export default function PetForm({ pet = {}, onSuccess, onCancel }) {
                                 name="status"
                                 value={formData.status}
                                 onChange={handleChange}
-                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
+                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand outline-none"
                             >
                                 <option value="available">Available</option>
                                 <option value="adopted">Adopted</option>
@@ -194,7 +239,7 @@ export default function PetForm({ pet = {}, onSuccess, onCancel }) {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="px-6 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-lg font-medium transition shadow-md disabled:opacity-50 flex items-center gap-2"
+                            className="px-6 py-2 bg-brand hover:bg-brand-light text-white rounded-lg font-medium transition shadow-md disabled:opacity-50 flex items-center gap-2"
                         >
                             {loading ? 'Saving...' : 'Save Pet'}
                         </button>
