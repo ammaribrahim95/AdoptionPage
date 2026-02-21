@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../services/supabaseClient'
-import { ArrowLeft, Check, Calendar, Heart } from 'lucide-react'
+import { ArrowLeft, Check, Calendar, Heart, Share2 } from 'lucide-react'
 import { calculateDynamicAge } from '../utils/helpers'
 import AdoptionFormModal from '../components/AdoptionFormModal'
 
@@ -10,6 +10,7 @@ export default function PetDetails() {
     const [pet, setPet] = useState(null)
     const [loading, setLoading] = useState(true)
     const [isApplyModalOpen, setIsApplyModalOpen] = useState(false)
+    const [shareTooltip, setShareTooltip] = useState('')
 
     useEffect(() => {
         const fetchPet = async () => {
@@ -31,6 +32,36 @@ export default function PetDetails() {
 
     const isAdopted = pet.status === 'adopted'
 
+    const handleShare = async () => {
+        const urlToShare = window.location.href
+        const shareData = {
+            title: `Meet ${pet.name}!`,
+            text: `Check out ${pet.name}, currently available for adoption at The A Pawstrophe!`,
+            url: urlToShare
+        }
+
+        if (navigator.share) {
+            try {
+                await navigator.share(shareData)
+            } catch {
+                // User cancelled or share failed, fallback to copy
+                copyToClipboard(urlToShare)
+            }
+        } else {
+            // Web Share API not supported
+            copyToClipboard(urlToShare)
+        }
+    }
+
+    const copyToClipboard = (text) => {
+        navigator.clipboard.writeText(text).then(() => {
+            setShareTooltip('Link copied!')
+            setTimeout(() => setShareTooltip(''), 2000)
+        }).catch(err => {
+            console.error('Failed to copy: ', err)
+        })
+    }
+
     return (
         <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-100">
             <div className="md:flex">
@@ -49,14 +80,43 @@ export default function PetDetails() {
                     )}
                 </div>
                 <div className="p-8 md:w-1/2 flex flex-col">
-                    <Link to="/available" className="inline-flex items-center text-slate-500 hover:text-brand mb-6 transition">
-                        <ArrowLeft size={16} className="mr-1" /> Back to Available Pets
-                    </Link>
+                    <div className="flex justify-between items-center mb-6">
+                        <Link to="/available" className="inline-flex items-center text-slate-500 hover:text-brand transition">
+                            <ArrowLeft size={16} className="mr-1" /> Back to Pets
+                        </Link>
+
+                        <div className="relative">
+                            <button
+                                onClick={handleShare}
+                                className="p-2 text-slate-400 hover:text-brand bg-slate-50 hover:bg-brand-lighter/20 rounded-full transition-colors flex items-center justify-center"
+                                title="Share Pet"
+                                aria-label="Share this pet"
+                            >
+                                <Share2 size={20} />
+                            </button>
+                            {shareTooltip && (
+                                <div className="absolute right-0 -top-10 bg-slate-800 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap">
+                                    {shareTooltip}
+                                </div>
+                            )}
+                        </div>
+                    </div>
 
                     <div className="flex justify-between items-start mb-4">
                         <div>
                             <h1 className="text-4xl font-bold text-slate-800 mb-2">{pet.name}</h1>
-                            <p className="text-lg text-slate-500">{pet.breed} • {pet.gender}</p>
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className="text-lg text-slate-500">{pet.breed}</span>
+                                <span className="text-slate-300">•</span>
+                                <span className="text-lg font-bold flex items-center gap-1">
+                                    <span className="text-slate-600">{pet.gender}</span>
+                                    {pet.gender?.toLowerCase() === 'male' ? (
+                                        <span className="text-blue-500 font-extrabold text-2xl leading-none">♂</span>
+                                    ) : pet.gender?.toLowerCase() === 'female' ? (
+                                        <span className="text-[#c4777d] font-extrabold text-2xl leading-none">♀</span>
+                                    ) : null}
+                                </span>
+                            </div>
                         </div>
                         {!isAdopted && (
                             <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-bold uppercase">
@@ -77,8 +137,46 @@ export default function PetDetails() {
                     </div>
 
                     <div className="prose prose-slate mb-8 flex-grow">
-                        <h3 className="text-lg font-semibold text-slate-700 mb-2">About {pet.name}</h3>
-                        <p>{pet.description}</p>
+                        <h3 className="text-lg font-semibold text-slate-700 mb-3">About {pet.name}</h3>
+                        <p className="text-slate-600 leading-relaxed mb-6">{pet.description}</p>
+
+                        {(pet.is_dewormed || pet.is_deflea || pet.is_vaccinated || pet.is_potty_trained || pet.is_neutered) && (
+                            <div className="bg-slate-50 border border-slate-100 rounded-xl p-5 mb-6">
+                                <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest mb-4">Medical & Care Status</h4>
+                                <div className="flex flex-wrap gap-2">
+                                    {pet.is_dewormed && (
+                                        <span className="inline-flex items-center gap-1.5 bg-teal-50 text-teal-700 border border-teal-100 px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider shadow-sm">
+                                            <Check size={14} strokeWidth={3} /> Dewormed
+                                        </span>
+                                    )}
+                                    {pet.is_deflea && (
+                                        <span className="inline-flex items-center gap-1.5 bg-teal-50 text-teal-700 border border-teal-100 px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider shadow-sm">
+                                            <Check size={14} strokeWidth={3} /> Deflea
+                                        </span>
+                                    )}
+                                    {pet.is_vaccinated && (
+                                        <span className="inline-flex items-center gap-1.5 bg-teal-50 text-teal-700 border border-teal-100 px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider shadow-sm">
+                                            <Check size={14} strokeWidth={3} /> Vaccinated
+                                        </span>
+                                    )}
+                                    {pet.is_potty_trained && (
+                                        <span className="inline-flex items-center gap-1.5 bg-indigo-50 text-indigo-700 border border-indigo-100 px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider shadow-sm">
+                                            <Check size={14} strokeWidth={3} /> Potty Trained
+                                        </span>
+                                    )}
+                                    {pet.is_neutered && (
+                                        <span className="inline-flex items-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-100 px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider shadow-sm">
+                                            <Check size={14} strokeWidth={3} /> Spayed/Neutered
+                                        </span>
+                                    )}
+                                </div>
+                                {pet.is_vaccinated && pet.vaccination_date && (
+                                    <div className="mt-4 pt-4 border-t border-slate-200/60 text-sm text-slate-500 flex items-center gap-2">
+                                        <Calendar size={14} /> Last Vaccinated: <span className="font-semibold text-slate-700">{new Date(pet.vaccination_date).toLocaleDateString()}</span>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     {!isAdopted ? (

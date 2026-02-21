@@ -11,19 +11,68 @@ export default function AdoptionFormModal({ pet, onClose }) {
         email: '',
         phone: '',
         housing_type: '',
-        experience: ''
+        experience: '',
+        agreed: false
     })
+    const [errors, setErrors] = useState({})
 
     const handleChange = (e) => {
-        const { name, value } = e.target
-        setFormData(prev => ({ ...prev, [name]: value }))
+        const { name, value, type, checked } = e.target
+        setFormData(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }))
+        // Clear error when user types
+        if (errors[name]) setErrors(prev => ({ ...prev, [name]: null }))
     }
 
-    const nextStep = () => setStep(prev => Math.min(prev + 1, 3))
+    const validateStep = (currentStep) => {
+        const newErrors = {}
+        if (currentStep === 1) {
+            if (!formData.applicant_name.trim()) newErrors.applicant_name = 'Name is required'
+            if (!formData.email.trim()) {
+                newErrors.email = 'Email is required'
+            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+                newErrors.email = 'Invalid email format'
+            }
+            if (!formData.phone.trim()) {
+                newErrors.phone = 'Phone is required'
+            } else if (!/^\+?[\d\s-]{8,}$/.test(formData.phone)) {
+                newErrors.phone = 'Invalid phone format'
+            }
+        }
+        if (currentStep === 2) {
+            if (!formData.housing_type) newErrors.housing_type = 'Please select a housing type'
+        }
+        if (currentStep === 3) {
+            if (!formData.experience.trim()) newErrors.experience = 'Experience details are required'
+            if (!formData.agreed) newErrors.agreed = 'You must agree to the terms to proceed'
+        }
+
+        setErrors(newErrors)
+        return Object.keys(newErrors).length === 0
+    }
+
+    const nextStep = () => {
+        if (validateStep(step)) {
+            setStep(prev => Math.min(prev + 1, 3))
+        } else {
+            // Scroll to the first error (simple fallback by just showing errors)
+            const firstErrorNode = document.querySelector('.border-red-500')
+            if (firstErrorNode) firstErrorNode.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }
+    }
+
     const prevStep = () => setStep(prev => Math.max(prev - 1, 1))
 
     const handleSubmit = async (e) => {
         e.preventDefault()
+        if (!validateStep(3)) {
+            const firstErrorNode = document.querySelector('.border-red-500')
+            if (firstErrorNode) firstErrorNode.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            return
+        }
+
         setLoading(true)
 
         try {
@@ -105,40 +154,43 @@ export default function AdoptionFormModal({ pet, onClose }) {
                             <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
                                 <h3 className="text-lg font-bold text-slate-700 mb-4 tracking-tight">Personal Information</h3>
                                 <div>
-                                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Full Name</label>
+                                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Full Name <span className="text-red-500">*</span></label>
                                     <input
                                         type="text"
                                         name="applicant_name"
                                         value={formData.applicant_name}
                                         onChange={handleChange}
-                                        required
                                         placeholder="John Doe"
-                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand/50 focus:border-brand focus:bg-white outline-none transition-all placeholder:text-slate-400 focus:shadow-[0_0_0_2px_rgba(183,89,96,0.1)]"
+                                        className={`w-full px-4 py-3 bg-slate-50 border rounded-xl focus:ring-2 focus:ring-brand/50 outline-none transition-all placeholder:text-slate-400 
+                                            ${errors.applicant_name ? 'border-red-500 focus:border-red-500 bg-red-50/50' : 'border-slate-200 focus:border-brand focus:bg-white focus:shadow-[0_0_0_2px_rgba(183,89,96,0.1)]'}`}
                                     />
+                                    {errors.applicant_name && <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.applicant_name}</p>}
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Email Address</label>
+                                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Email Address <span className="text-red-500">*</span></label>
                                     <input
                                         type="email"
                                         name="email"
                                         value={formData.email}
                                         onChange={handleChange}
-                                        required
                                         placeholder="john@example.com"
-                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand/50 focus:border-brand focus:bg-white outline-none transition-all placeholder:text-slate-400 focus:shadow-[0_0_0_2px_rgba(183,89,96,0.1)]"
+                                        className={`w-full px-4 py-3 bg-slate-50 border rounded-xl focus:ring-2 focus:ring-brand/50 outline-none transition-all placeholder:text-slate-400 
+                                            ${errors.email ? 'border-red-500 focus:border-red-500 bg-red-50/50' : 'border-slate-200 focus:border-brand focus:bg-white focus:shadow-[0_0_0_2px_rgba(183,89,96,0.1)]'}`}
                                     />
+                                    {errors.email && <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.email}</p>}
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Phone Number</label>
+                                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Phone Number <span className="text-red-500">*</span></label>
                                     <input
                                         type="tel"
                                         name="phone"
                                         value={formData.phone}
                                         onChange={handleChange}
-                                        required
-                                        placeholder="+1 (555) 000-0000"
-                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand/50 focus:border-brand focus:bg-white outline-none transition-all placeholder:text-slate-400 focus:shadow-[0_0_0_2px_rgba(183,89,96,0.1)]"
+                                        placeholder="+60 12-345 6789"
+                                        className={`w-full px-4 py-3 bg-slate-50 border rounded-xl focus:ring-2 focus:ring-brand/50 outline-none transition-all placeholder:text-slate-400 
+                                            ${errors.phone ? 'border-red-500 focus:border-red-500 bg-red-50/50' : 'border-slate-200 focus:border-brand focus:bg-white focus:shadow-[0_0_0_2px_rgba(183,89,96,0.1)]'}`}
                                     />
+                                    {errors.phone && <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.phone}</p>}
                                 </div>
                             </div>
                         )}
@@ -148,13 +200,13 @@ export default function AdoptionFormModal({ pet, onClose }) {
                             <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
                                 <h3 className="text-lg font-bold text-slate-700 mb-4 tracking-tight">Housing Situation</h3>
                                 <div>
-                                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">What type of housing do you live in?</label>
+                                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">What type of housing do you live in? <span className="text-red-500">*</span></label>
                                     <select
                                         name="housing_type"
                                         value={formData.housing_type}
                                         onChange={handleChange}
-                                        required
-                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand/50 focus:border-brand focus:bg-white outline-none transition-all text-slate-700 focus:shadow-[0_0_0_2px_rgba(183,89,96,0.1)]"
+                                        className={`w-full px-4 py-3 bg-slate-50 border rounded-xl focus:ring-2 focus:ring-brand/50 outline-none transition-all text-slate-700
+                                            ${errors.housing_type ? 'border-red-500 focus:border-red-500 bg-red-50/50' : 'border-slate-200 focus:border-brand focus:bg-white focus:shadow-[0_0_0_2px_rgba(183,89,96,0.1)]'}`}
                                     >
                                         <option value="" disabled>Select housing type</option>
                                         <option value="House (Own)">House (Own)</option>
@@ -162,6 +214,7 @@ export default function AdoptionFormModal({ pet, onClose }) {
                                         <option value="Apartment/Condo (Own)">Apartment/Condo (Own)</option>
                                         <option value="Apartment/Condo (Rent)">Apartment/Condo (Rent)</option>
                                     </select>
+                                    {errors.housing_type && <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.housing_type}</p>}
                                     {formData.housing_type.includes('Rent') && (
                                         <p className="text-xs text-amber-600 mt-2 bg-amber-50 p-2 rounded-lg border border-amber-100 flex items-start">
                                             <span className="mr-1 mt-0.5">⚠️</span>
@@ -177,19 +230,33 @@ export default function AdoptionFormModal({ pet, onClose }) {
                             <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
                                 <h3 className="text-lg font-bold text-slate-700 mb-4 tracking-tight">Experience & Lifestyle</h3>
                                 <div>
-                                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Tell us about your pet experience</label>
+                                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Tell us about your pet experience <span className="text-red-500">*</span></label>
                                     <textarea
                                         name="experience"
                                         value={formData.experience}
                                         onChange={handleChange}
-                                        required
                                         rows="4"
                                         placeholder="Have you had pets before? Who lives in your household? How many hours will the pet be alone?"
-                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand/50 focus:border-brand focus:bg-white outline-none transition-all placeholder:text-slate-400 resize-none focus:shadow-[0_0_0_2px_rgba(183,89,96,0.1)]"
+                                        className={`w-full px-4 py-3 bg-slate-50 border rounded-xl focus:ring-2 focus:ring-brand/50 outline-none transition-all placeholder:text-slate-400 resize-none
+                                            ${errors.experience ? 'border-red-500 focus:border-red-500 bg-red-50/50' : 'border-slate-200 focus:border-brand focus:bg-white focus:shadow-[0_0_0_2px_rgba(183,89,96,0.1)]'}`}
                                     ></textarea>
+                                    {errors.experience && <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.experience}</p>}
                                 </div>
-                                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 text-sm tracking-wide text-slate-600 leading-relaxed shadow-sm">
-                                    By submitting this form, you affirm that all information provided is true and complete. You understand that submission does not guarantee adoption.
+                                <div className={`p-4 rounded-xl border text-sm tracking-wide leading-relaxed shadow-sm transition-colors 
+                                    ${errors.agreed ? 'bg-red-50 border-red-500 text-red-700' : 'bg-slate-50 border-slate-100 text-slate-600'}`}>
+                                    <label className="flex items-start gap-3 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            name="agreed"
+                                            checked={formData.agreed}
+                                            onChange={handleChange}
+                                            className="mt-1 w-4 h-4 text-brand bg-slate-100 border-slate-300 rounded focus:ring-brand focus:ring-2"
+                                        />
+                                        <span>
+                                            I affirm that all information provided is true and complete. I understand that submission does not guarantee adoption.
+                                            {errors.agreed && <span className="block font-bold text-red-500 mt-1">{errors.agreed}</span>}
+                                        </span>
+                                    </label>
                                 </div>
                             </div>
                         )}

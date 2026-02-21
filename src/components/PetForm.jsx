@@ -11,10 +11,15 @@ export default function PetForm({ pet = {}, onSuccess, onCancel }) {
         breed: pet.breed || '',
         description: pet.description || '',
         status: pet.status || 'available',
-        image_url: pet.image_url || ''
+        image_url: pet.image_url || '',
+        is_dewormed: pet.is_dewormed || false,
+        is_deflea: pet.is_deflea || false,
+        is_vaccinated: pet.is_vaccinated || false,
+        is_potty_trained: pet.is_potty_trained || false,
+        is_neutered: pet.is_neutered || false,
+        vaccination_date: pet.vaccination_date || ''
     })
     const [imageFile, setImageFile] = useState(null)
-    const [uploading, setUploading] = useState(false)
     const [loading, setLoading] = useState(false)
 
     // State for approx age calculator
@@ -32,8 +37,37 @@ export default function PetForm({ pet = {}, onSuccess, onCancel }) {
 
     const handleChange = (e) => {
         const { name, value } = e.target
+
+        // Handle boolean values specifically if passed from our custom radio buttons
+        if (value === 'true' || value === 'false') {
+            setFormData(prev => ({ ...prev, [name]: value === 'true' }))
+            return
+        }
+
         setFormData(prev => ({ ...prev, [name]: value }))
     }
+
+    const renderBooleanToggle = (label, name) => (
+        <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">{label}</label>
+            <div className="flex bg-slate-50 p-1 rounded-lg border border-slate-200">
+                <button
+                    type="button"
+                    onClick={() => setFormData(p => ({ ...p, [name]: true }))}
+                    className={`flex-1 py-1.5 text-sm font-semibold rounded-md transition-all ${formData[name] ? 'bg-white text-brand shadow-sm border border-slate-100' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                    Yes
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setFormData(p => ({ ...p, [name]: false }))}
+                    className={`flex-1 py-1.5 text-sm font-semibold rounded-md transition-all ${!formData[name] ? 'bg-white text-slate-800 shadow-sm border border-slate-100' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                    No
+                </button>
+            </div>
+        </div>
+    )
 
     const handleImageChange = (e) => {
         if (e.target.files && e.target.files[0]) {
@@ -66,14 +100,16 @@ export default function PetForm({ pet = {}, onSuccess, onCancel }) {
     const handleSubmit = async (e) => {
         e.preventDefault()
         setLoading(true)
-        setUploading(true)
 
         try {
             const imageUrl = await uploadImage()
 
+            const finalVaccinationDate = formData.is_vaccinated && formData.vaccination_date ? formData.vaccination_date : null
+
             const dataToSave = {
                 ...formData,
-                image_url: imageUrl
+                image_url: imageUrl,
+                vaccination_date: finalVaccinationDate
             }
 
             let error
@@ -96,7 +132,6 @@ export default function PetForm({ pet = {}, onSuccess, onCancel }) {
             alert('Error saving pet: ' + error.message)
         } finally {
             setLoading(false)
-            setUploading(false)
         }
     }
 
@@ -198,6 +233,37 @@ export default function PetForm({ pet = {}, onSuccess, onCancel }) {
                             rows="4"
                             className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand outline-none"
                         ></textarea>
+                    </div>
+
+                    <div className="bg-slate-50 border border-slate-100 p-5 rounded-xl">
+                        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-widest mb-4">Medical & Care Status</h3>
+
+                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+                            {renderBooleanToggle('Dewormed', 'is_dewormed')}
+                            {renderBooleanToggle('Deflea', 'is_deflea')}
+                            {renderBooleanToggle('Potty Trained', 'is_potty_trained')}
+                            {renderBooleanToggle('Spayed/Neutered', 'is_neutered')}
+
+                            <div className="col-span-2 lg:col-span-2 p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                                    {renderBooleanToggle('Vaccinated', 'is_vaccinated')}
+
+                                    {formData.is_vaccinated && (
+                                        <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Vaccination Date</label>
+                                            <input
+                                                type="date"
+                                                name="vaccination_date"
+                                                value={formData.vaccination_date || ''}
+                                                onChange={handleChange}
+                                                max={new Date().toISOString().split('T')[0]}
+                                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand outline-none"
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

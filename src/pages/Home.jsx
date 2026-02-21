@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../services/supabaseClient'
 import { Link } from 'react-router-dom'
-import { Clock, Heart, Share2, Image as ImageIcon } from 'lucide-react'
+import { Clock, Heart, Share2, Image as ImageIcon, Check } from 'lucide-react'
+// eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion'
 import { useAuth } from '../hooks/useAuth'
 
@@ -9,6 +10,44 @@ export default function Home() {
     const { user } = useAuth()
     const [updates, setUpdates] = useState([])
     const [loading, setLoading] = useState(true)
+    const [copiedId, setCopiedId] = useState(null)
+
+    const handleShare = async (update) => {
+        let urlToShare = window.location.origin + import.meta.env.BASE_URL;
+        let shareTitle = "The A Pawstrophe - Shelter Update";
+        let shareText = update.title || "Check out this update!";
+
+        if (update.pet) {
+            // Strip trailing slash from BASE_URL if it exists before appending path
+            const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL.slice(0, -1) : import.meta.env.BASE_URL;
+            urlToShare = window.location.origin + base + `/pet/${update.pet.id}`;
+            shareTitle = `Meet ${update.pet.name}!`;
+            shareText = update.type === 'new_pet' ? `Say hello to ${update.pet.name}! Could you be their forever family?` : update.title;
+        }
+
+        const shareData = {
+            title: shareTitle,
+            text: shareText,
+            url: urlToShare
+        }
+
+        const copyToFallback = () => {
+            navigator.clipboard.writeText(urlToShare).then(() => {
+                setCopiedId(update.id)
+                setTimeout(() => setCopiedId(null), 2000)
+            })
+        }
+
+        if (navigator.share) {
+            try {
+                await navigator.share(shareData)
+            } catch {
+                copyToFallback()
+            }
+        } else {
+            copyToFallback()
+        }
+    }
 
     useEffect(() => {
         const fetchUpdates = async () => {
@@ -35,7 +74,7 @@ export default function Home() {
             // Fetch newest available pets
             const { data: petsData } = await supabase
                 .from('pets')
-                .select('id, name, description, image_url, status, created_at')
+                .select('id, name, description, image_url, status, created_at, gender, is_dewormed, is_deflea, is_vaccinated, is_potty_trained, is_neutered')
                 .eq('status', 'available')
                 .order('created_at', { ascending: false })
                 .limit(10)
@@ -49,14 +88,24 @@ export default function Home() {
                     content: u.content,
                     pet: u.pets
                 })),
-                ...(petsData || []).map(p => ({
-                    type: 'new_pet',
-                    id: `newpet-${p.id}`,
-                    created_at: p.created_at,
-                    title: `Welcome, ${p.name}!`,
-                    content: `🐾 Say hello to ${p.name}! We just welcomed them to the shelter. ${p.description ? p.description.substring(0, 100) + '...' : ''}`,
-                    pet: p
-                }))
+                ...(petsData || []).map(p => {
+                    const messages = [
+                        `Could you be ${p.name}'s forever family?`,
+                        `This sweet soul is looking for warm cuddles and a loving home.`,
+                        `Are you the paw parent ${p.name} has been waiting for?`,
+                        `Ready to make a lifetime of memories together?`,
+                        `Your home might be the happily ever after this little one deserves.`
+                    ];
+                    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+                    return {
+                        type: 'new_pet',
+                        id: `newpet-${p.id}`,
+                        created_at: p.created_at,
+                        title: `Say hello to ${p.name}! 🐾`,
+                        content: `${randomMessage}\n\n${p.description ? p.description.substring(0, 150) + '...' : ''}`,
+                        pet: p
+                    };
+                })
             ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 10)
 
             setUpdates(combined)
@@ -69,27 +118,36 @@ export default function Home() {
     return (
         <div className="min-h-screen">
             {/* Hero Section */}
-            <section className="relative w-full h-[500px] md:h-[600px] flex items-center justify-center overflow-hidden mb-16 rounded-b-[2.5rem] md:rounded-b-[4rem] shadow-sm">
-                <div className="absolute inset-0 bg-gradient-to-br from-brand/90 to-brand-lighter/90 mix-blend-multiply z-10" />
+            <section className="relative w-full min-h-[75svh] lg:min-h-[65svh] flex items-center justify-center overflow-hidden pt-20 pb-10 lg:pt-20 lg:pb-10 mb-16 rounded-b-[2.5rem] md:rounded-b-[4rem] shadow-sm bg-[#b75960]">
+                {/* Decorative background logo */}
                 <div
-                    className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=2574&auto=format&fit=crop')] 
-                               bg-cover bg-center bg-no-repeat"
+                    className="absolute inset-0 opacity-10 bg-[length:400px_400px] bg-center bg-no-repeat"
+                    style={{ backgroundImage: `url('${import.meta.env.BASE_URL}favicon.png')` }}
                 />
 
                 <div className="relative z-20 text-center px-6 max-w-4xl mx-auto flex flex-col items-center">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.6, ease: "easeOut" }}
+                        className="mb-2 md:mb-4"
+                    >
+                        <img src={`${import.meta.env.BASE_URL}favicon.png`} alt="The A Pawstrophe Logo" className="w-40 h-40 sm:w-48 sm:h-48 md:w-64 md:h-64 object-cover drop-shadow-xl -mt-14 sm:-mt-16 md:-mt-24 -mb-2 sm:-mb-4 md:-mb-6 relative z-10" />
+                    </motion.div>
+
                     <motion.h1
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, ease: "easeOut" }}
-                        className="text-5xl md:text-7xl font-black text-white mb-6 tracking-tight drop-shadow-md"
+                        transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+                        className="text-4xl md:text-7xl font-black text-white mb-4 md:mb-6 tracking-tight drop-shadow-md"
                     >
                         Find Your Forever Friend <span className="inline-block animate-bounce">🐾</span>
                     </motion.h1>
                     <motion.p
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        transition={{ duration: 0.8, delay: 0.3 }}
-                        className="text-lg md:text-2xl text-white/90 mb-10 font-medium max-w-2xl drop-shadow"
+                        transition={{ duration: 0.8, delay: 0.4 }}
+                        className="text-base md:text-2xl text-white/90 mb-8 md:mb-10 font-medium max-w-2xl drop-shadow px-2"
                     >
                         Every pet deserves a loving home. Start your journey today and
                         discover the unconditional love of a rescued companion.
@@ -99,20 +157,20 @@ export default function Home() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.6 }}
-                        className="flex flex-col sm:flex-row gap-4"
+                        className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto px-2"
                     >
                         <Link
                             to="/available"
-                            className="bg-white text-brand hover:bg-primary px-8 py-4 rounded-full font-bold text-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all"
+                            className="bg-white text-[#b75960] hover:bg-slate-50 px-6 py-3.5 sm:px-8 sm:py-4 rounded-full font-bold text-base sm:text-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all"
                         >
                             Browse Pets
                         </Link>
                         {user && (
                             <Link
                                 to="/admin"
-                                className="bg-brand-lighter hover:bg-brand-light text-slate-800 px-8 py-4 rounded-full font-bold text-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all flex items-center justify-center gap-2"
+                                className="bg-white/20 hover:bg-white/30 text-white backdrop-blur-sm px-6 py-3.5 sm:px-8 sm:py-4 rounded-full font-bold text-base sm:text-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all flex items-center justify-center gap-2 border border-white/30"
                             >
-                                <ImageIcon size={20} /> Manage Stories & Pets
+                                <ImageIcon size={20} className="hidden sm:inline-block" /> Manage Stories & Pets
                             </Link>
                         )}
                     </motion.div>
@@ -202,6 +260,53 @@ export default function Home() {
                                     <p className="text-slate-700 whitespace-pre-wrap leading-relaxed text-[15px]">
                                         {update.content}
                                     </p>
+
+                                    {update.type === 'new_pet' && update.pet && (
+                                        <div className="mt-5 mb-2 flex flex-col gap-4">
+                                            {/* Gender */}
+                                            <div className="flex items-center">
+                                                <span className={`text-sm font-bold flex items-center gap-1.5 px-3 py-1.5 rounded-lg border shadow-sm ${update.pet.gender?.toLowerCase() === 'male' ? 'bg-blue-50 border-blue-100 text-blue-700' : update.pet.gender?.toLowerCase() === 'female' ? 'bg-pink-50 border-pink-100 text-pink-700' : 'bg-slate-50 border-slate-100 text-slate-600'}`}>
+                                                    <span className="text-slate-800 tracking-wide">{update.pet.gender}</span>
+                                                    {update.pet.gender?.toLowerCase() === 'male' ? (
+                                                        <span className="font-black text-lg leading-none">♂</span>
+                                                    ) : update.pet.gender?.toLowerCase() === 'female' ? (
+                                                        <span className="font-black text-lg leading-none">♀</span>
+                                                    ) : null}
+                                                </span>
+                                            </div>
+
+                                            {/* Health Status */}
+                                            {(update.pet.is_dewormed || update.pet.is_deflea || update.pet.is_vaccinated || update.pet.is_potty_trained || update.pet.is_neutered) && (
+                                                <div className="flex flex-wrap gap-2">
+                                                    {update.pet.is_dewormed && (
+                                                        <span className="inline-flex items-center gap-1 bg-teal-50 text-teal-700 border border-teal-100 px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wider">
+                                                            <Check size={12} strokeWidth={3} /> Dewormed
+                                                        </span>
+                                                    )}
+                                                    {update.pet.is_deflea && (
+                                                        <span className="inline-flex items-center gap-1 bg-teal-50 text-teal-700 border border-teal-100 px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wider">
+                                                            <Check size={12} strokeWidth={3} /> Deflea
+                                                        </span>
+                                                    )}
+                                                    {update.pet.is_vaccinated && (
+                                                        <span className="inline-flex items-center gap-1 bg-teal-50 text-teal-700 border border-teal-100 px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wider">
+                                                            <Check size={12} strokeWidth={3} /> Vaccinated
+                                                        </span>
+                                                    )}
+                                                    {update.pet.is_potty_trained && (
+                                                        <span className="inline-flex items-center gap-1 bg-indigo-50 text-indigo-700 border border-indigo-100 px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wider">
+                                                            <Check size={12} strokeWidth={3} /> Potty Trained
+                                                        </span>
+                                                    )}
+                                                    {update.pet.is_neutered && (
+                                                        <span className="inline-flex items-center gap-1 bg-purple-50 text-purple-700 border border-purple-100 px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wider">
+                                                            <Check size={12} strokeWidth={3} /> Spayed/Neutered
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Image Showcase (Placeholder for multi-image logic later) */}
@@ -221,10 +326,20 @@ export default function Home() {
                                         <Heart size={20} className="group-hover:fill-current" />
                                         <span className="text-sm font-semibold">Like</span>
                                     </button>
-                                    <button className="flex items-center gap-2 text-slate-400 hover:text-brand transition-colors">
-                                        <Share2 size={20} />
-                                        <span className="text-sm font-semibold">Share</span>
-                                    </button>
+                                    <div className="relative">
+                                        <button
+                                            onClick={() => handleShare(update)}
+                                            className="flex items-center gap-2 text-slate-400 hover:text-brand transition-colors"
+                                        >
+                                            <Share2 size={20} />
+                                            <span className="text-sm font-semibold">Share</span>
+                                        </button>
+                                        {copiedId === update.id && (
+                                            <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap animate-in fade-in zoom-in duration-200">
+                                                Link copied!
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </motion.div>
                         ))}
