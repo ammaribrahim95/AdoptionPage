@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../services/supabaseClient'
 import { ArrowLeft, Check, Calendar, Heart, Share2 } from 'lucide-react'
 import { calculateDynamicAge } from '../utils/helpers'
@@ -7,12 +7,14 @@ import AdoptionFormModal from '../components/AdoptionFormModal'
 
 export default function PetDetails() {
     const { id } = useParams()
+    const navigate = useNavigate()
     const [pet, setPet] = useState(null)
     const [loading, setLoading] = useState(true)
     const [isApplyModalOpen, setIsApplyModalOpen] = useState(false)
     const [shareTooltip, setShareTooltip] = useState('')
 
     useEffect(() => {
+        window.scrollTo(0, 0)
         const fetchPet = async () => {
             const { data } = await supabase
                 .from('pets')
@@ -81,9 +83,18 @@ export default function PetDetails() {
                 </div>
                 <div className="p-8 md:w-1/2 flex flex-col">
                     <div className="flex justify-between items-center mb-6">
-                        <Link to="/available" className="inline-flex items-center text-slate-500 hover:text-brand transition">
-                            <ArrowLeft size={16} className="mr-1" /> Back to Pets
-                        </Link>
+                        <button
+                            onClick={() => {
+                                if (window.history.state && window.history.state.idx > 0) {
+                                    navigate(-1)
+                                } else {
+                                    navigate('/available')
+                                }
+                            }}
+                            className="inline-flex items-center text-slate-500 hover:text-brand transition cursor-pointer"
+                        >
+                            <ArrowLeft size={16} className="mr-1" /> Back
+                        </button>
 
                         <div className="relative">
                             <button
@@ -111,9 +122,9 @@ export default function PetDetails() {
                                 <span className="text-lg font-bold flex items-center gap-1">
                                     <span className="text-slate-600">{pet.gender}</span>
                                     {pet.gender?.toLowerCase() === 'male' ? (
-                                        <span className="text-blue-500 font-extrabold text-2xl leading-none">♂</span>
+                                        <img src={`${import.meta.env.BASE_URL}male.png`} alt="Male" className="w-6 h-6 inline-block" />
                                     ) : pet.gender?.toLowerCase() === 'female' ? (
-                                        <span className="text-[#c4777d] font-extrabold text-2xl leading-none">♀</span>
+                                        <img src={`${import.meta.env.BASE_URL}female.png`} alt="Female" className="w-6 h-6 inline-block" />
                                     ) : null}
                                 </span>
                             </div>

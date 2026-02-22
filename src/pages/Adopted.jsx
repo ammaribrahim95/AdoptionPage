@@ -8,6 +8,7 @@ export default function Adopted() {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
+        window.scrollTo(0, 0)
         const fetchPets = async () => {
             const { data } = await supabase
                 .from('pets')

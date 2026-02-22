@@ -50,6 +50,7 @@ export default function Home() {
     }
 
     useEffect(() => {
+        window.scrollTo(0, 0)
         const fetchUpdates = async () => {
             // Fetch updates (using content, fallback to message if migration not run)
             const { data: updatesData } = await supabase
@@ -268,9 +269,9 @@ export default function Home() {
                                                 <span className={`text-sm font-bold flex items-center gap-1.5 px-3 py-1.5 rounded-lg border shadow-sm ${update.pet.gender?.toLowerCase() === 'male' ? 'bg-blue-50 border-blue-100 text-blue-700' : update.pet.gender?.toLowerCase() === 'female' ? 'bg-pink-50 border-pink-100 text-pink-700' : 'bg-slate-50 border-slate-100 text-slate-600'}`}>
                                                     <span className="text-slate-800 tracking-wide">{update.pet.gender}</span>
                                                     {update.pet.gender?.toLowerCase() === 'male' ? (
-                                                        <span className="font-black text-lg leading-none">♂</span>
+                                                        <img src={`${import.meta.env.BASE_URL}male.png`} alt="Male" className="w-5 h-5 inline-block" />
                                                     ) : update.pet.gender?.toLowerCase() === 'female' ? (
-                                                        <span className="font-black text-lg leading-none">♀</span>
+                                                        <img src={`${import.meta.env.BASE_URL}female.png`} alt="Female" className="w-5 h-5 inline-block" />
                                                     ) : null}
                                                 </span>
                                             </div>
@@ -311,13 +312,13 @@ export default function Home() {
 
                                 {/* Image Showcase (Placeholder for multi-image logic later) */}
                                 {update.pet?.image_url && (
-                                    <div className="w-full h-80 bg-slate-100 rounded-2xl overflow-hidden mb-4 group cursor-pointer relative">
+                                    <Link to={`/pet/${update.pet.id}`} className="block w-full h-80 bg-slate-100 rounded-2xl overflow-hidden mb-4 group cursor-pointer relative">
                                         <img
                                             src={update.pet.image_url}
                                             alt={update.pet?.name}
                                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                         />
-                                    </div>
+                                    </Link>
                                 )}
 
                                 {/* Social Actions */}

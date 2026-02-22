@@ -15,6 +15,7 @@ export default function Available() {
     const [ageFilter, setAgeFilter] = useState('all') // all, baby, young, adult, senior
 
     useEffect(() => {
+        window.scrollTo(0, 0)
         const fetchPets = async () => {
             const { data } = await supabase
                 .from('pets')

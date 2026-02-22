@@ -84,9 +84,9 @@ export default function PetCard({ pet, isAdopted = false }) {
                     <span className="text-sm font-bold flex items-center gap-1 bg-slate-50 px-2.5 py-1 rounded border border-slate-100 shadow-sm">
                         <span className="text-slate-600">{pet.gender}</span>
                         {pet.gender?.toLowerCase() === 'male' ? (
-                            <span className="text-blue-500 font-extrabold text-lg leading-none">♂</span>
+                            <img src={`${import.meta.env.BASE_URL}male.png`} alt="Male" className="w-2.5 h-2.5 inline-block" />
                         ) : pet.gender?.toLowerCase() === 'female' ? (
-                            <span className="text-[#c4777d] font-extrabold text-lg leading-none">♀</span>
+                            <img src={`${import.meta.env.BASE_URL}female.png`} alt="Female" className="w-2.5 h-2.5 inline-block" />
                         ) : null}
                     </span>
                 </div>
