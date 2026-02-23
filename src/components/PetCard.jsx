@@ -7,7 +7,7 @@ export default function PetCard({ pet, isAdopted = false }) {
 
     const handleShare = async (e) => {
         e.preventDefault() // Prevent navigating to the pet details page if clicking the share button
-        const urlToShare = `${window.location.origin}/pet/${pet.id}`
+        const urlToShare = `${window.location.origin}${import.meta.env.BASE_URL}#/pet/${pet.id}`
         const shareData = {
             title: `Meet ${pet.name}!`,
             text: `Check out ${pet.name}, currently available for adoption at The A Pawstrophe!`,

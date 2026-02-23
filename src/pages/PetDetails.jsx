@@ -35,7 +35,7 @@ export default function PetDetails() {
     const isAdopted = pet.status === 'adopted'
 
     const handleShare = async () => {
-        const urlToShare = window.location.href
+        const urlToShare = `${window.location.origin}${import.meta.env.BASE_URL}#/pet/${pet.id}`
         const shareData = {
             title: `Meet ${pet.name}!`,
             text: `Check out ${pet.name}, currently available for adoption at The A Pawstrophe!`,
