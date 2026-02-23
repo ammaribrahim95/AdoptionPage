@@ -20,7 +20,7 @@ export default function Home() {
         if (update.pet) {
             // Strip trailing slash from BASE_URL if it exists before appending path
             const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL.slice(0, -1) : import.meta.env.BASE_URL;
-            urlToShare = window.location.origin + base + `/pet/${update.pet.id}`;
+            urlToShare = window.location.origin + base + `/#/pet/${update.pet.id}`;
             shareTitle = `Meet ${update.pet.name}!`;
             shareText = update.type === 'new_pet' ? `Say hello to ${update.pet.name}! Could you be their forever family?` : update.title;
         }
