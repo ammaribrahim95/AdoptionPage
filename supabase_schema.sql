@@ -25,15 +25,15 @@ alter table adoption_updates enable row level security;
 
 -- Create policies for 'pets'
 create policy "Allow public read access" on pets for select using (true);
-create policy "Allow authenticated insert" on pets for insert to authenticated with check (true);
-create policy "Allow authenticated update" on pets for update to authenticated using (true);
-create policy "Allow authenticated delete" on pets for delete to authenticated using (true);
+create policy "Allow authenticated insert" on pets for insert to authenticated with check (auth.uid() IS NOT NULL);
+create policy "Allow authenticated update" on pets for update to authenticated using (auth.uid() IS NOT NULL);
+create policy "Allow authenticated delete" on pets for delete to authenticated using (auth.uid() IS NOT NULL);
 
 -- Create policies for 'adoption_updates'
 create policy "Allow public read access" on adoption_updates for select using (true);
-create policy "Allow authenticated insert" on adoption_updates for insert to authenticated with check (true);
-create policy "Allow authenticated update" on adoption_updates for update to authenticated using (true);
-create policy "Allow authenticated delete" on adoption_updates for delete to authenticated using (true);
+create policy "Allow authenticated insert" on adoption_updates for insert to authenticated with check (auth.uid() IS NOT NULL);
+create policy "Allow authenticated update" on adoption_updates for update to authenticated using (auth.uid() IS NOT NULL);
+create policy "Allow authenticated delete" on adoption_updates for delete to authenticated using (auth.uid() IS NOT NULL);
 
 -- Create storage bucket for pet images
 insert into storage.buckets (id, name, public) values ('pet-images', 'pet-images', true);

@@ -32,8 +32,8 @@ ALTER TABLE adoption_applications ENABLE ROW LEVEL SECURITY;
 
 -- 5. Create policies for adoption_applications
 -- Admins can read/update/delete/insert
-CREATE POLICY "Allow authenticated full access applications" ON adoption_applications FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Allow authenticated full access applications" ON adoption_applications FOR ALL TO authenticated USING (auth.uid() IS NOT NULL) WITH CHECK (auth.uid() IS NOT NULL);
 -- Public can only insert new applications (Submit form)
-CREATE POLICY "Allow public insert application" ON adoption_applications FOR INSERT TO public WITH CHECK (true);
+CREATE POLICY "Allow public insert application" ON adoption_applications FOR INSERT TO public WITH CHECK (status = 'pending');
 
 -- Run this entirely!
