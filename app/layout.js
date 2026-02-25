@@ -12,6 +12,20 @@ export const metadata = {
     url: process.env.NEXT_PUBLIC_SITE_URL || 'https://adoptionpage.netlify.app',
     siteName: 'The A Pawstrophe',
     type: 'website',
+    images: [
+      {
+        url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://adoptionpage.netlify.app'}/favicon.png`,
+        width: 512,
+        height: 512,
+        alt: 'The A Pawstrophe Logo',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary',
+    title: 'The A Pawstrophe | Pet Adoption',
+    description: 'Connecting loving families with furry friends. Every adoption saves a life.',
+    images: [`${process.env.NEXT_PUBLIC_SITE_URL || 'https://adoptionpage.netlify.app'}/favicon.png`],
   },
 }
 
