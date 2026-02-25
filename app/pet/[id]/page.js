@@ -35,13 +35,18 @@ export async function generateMetadata({ params }) {
     ? pet.description.substring(0, 160)
     : `${pet.name} is looking for a forever home! Check out this adorable pet at The A Pawstrophe.`
 
+  // Use our own proxy URL so crawlers (WhatsApp, Facebook) can always access the image
+  const ogImageUrl = pet.image_url
+    ? `${siteUrl}/api/og-image/${pet.id}`
+    : `${siteUrl}/favicon.png`
+
   return {
     title: `${pet.name} – The A Pawstrophe`,
     description: description,
     openGraph: {
       title: `Meet ${pet.name}! 🐾`,
       description: description,
-      images: pet.image_url ? [{ url: pet.image_url, width: 800, height: 600, alt: pet.name }] : [],
+      images: [{ url: ogImageUrl, width: 800, height: 600, alt: pet.name }],
       url: `${siteUrl}/pet/${pet.id}`,
       siteName: 'The A Pawstrophe',
       type: 'website',
@@ -50,7 +55,7 @@ export async function generateMetadata({ params }) {
       card: 'summary_large_image',
       title: `Meet ${pet.name}! 🐾`,
       description: description,
-      images: pet.image_url ? [pet.image_url] : [],
+      images: [ogImageUrl],
     },
   }
 }
