@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #fdfaf6;
+  --color-brand: #b75960;
+  /* Dark Pink */
+  --color-brand-light: #c4777d;
+  /* Medium Pink */
+  --color-brand-lighter: #e6b7bb;
+  /* Light Pink */
+
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+}
+
+@layer base {
+  body {
+    @apply bg-primary text-slate-800 font-sans antialiased;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-lg;
+  }
+}
