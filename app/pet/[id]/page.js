@@ -19,6 +19,9 @@ async function fetchPet(id) {
   return data
 }
 
+// Force dynamic rendering so metadata is always fresh
+export const dynamic = 'force-dynamic'
+
 export async function generateMetadata({ params }) {
   const { id } = await params
   const pet = await fetchPet(id)
@@ -35,10 +38,9 @@ export async function generateMetadata({ params }) {
     ? pet.description.substring(0, 160)
     : `${pet.name} is looking for a forever home! Check out this adorable pet at The A Pawstrophe.`
 
-  // Use our own proxy URL so crawlers (WhatsApp, Facebook) can always access the image
-  const ogImageUrl = pet.image_url
-    ? `${siteUrl}/api/og-image/${pet.id}`
-    : `${siteUrl}/favicon.png`
+  // Use the direct public Supabase storage URL
+  // Verified: Supabase storage returns 200 OK with Access-Control-Allow-Origin: *
+  const ogImageUrl = pet.image_url || `${siteUrl}/favicon.png`
 
   return {
     title: `${pet.name} – The A Pawstrophe`,
@@ -46,7 +48,7 @@ export async function generateMetadata({ params }) {
     openGraph: {
       title: `Meet ${pet.name}! 🐾`,
       description: description,
-      images: [{ url: ogImageUrl, width: 800, height: 600, alt: pet.name }],
+      images: [{ url: ogImageUrl, width: 1200, height: 630, alt: pet.name }],
       url: `${siteUrl}/pet/${pet.id}`,
       siteName: 'The A Pawstrophe',
       type: 'website',
