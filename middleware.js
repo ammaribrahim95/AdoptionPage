@@ -57,7 +57,11 @@ export async function middleware(request) {
             ? pet.description.substring(0, 160)
             : `${pet.name} is looking for a forever home!`
 
-        const imageUrl = pet.image_url || `${siteUrl}/favicon.png`
+        // Use Next.js image optimization to compress the image (2.8MB → ~100KB)
+        // WhatsApp won't load images over ~1MB for preview
+        const imageUrl = pet.image_url
+            ? `${siteUrl}/_next/image?url=${encodeURIComponent(pet.image_url)}&w=1200&q=75`
+            : `${siteUrl}/favicon.png`
         const pageUrl = `${siteUrl}/pet/${pet.id}`
 
         // Return a minimal HTML page with all OG tags properly in <head>

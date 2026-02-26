@@ -38,9 +38,10 @@ export async function generateMetadata({ params }) {
     ? pet.description.substring(0, 160)
     : `${pet.name} is looking for a forever home! Check out this adorable pet at The A Pawstrophe.`
 
-  // Use the direct public Supabase storage URL
-  // Verified: Supabase storage returns 200 OK with Access-Control-Allow-Origin: *
-  const ogImageUrl = pet.image_url || `${siteUrl}/favicon.png`
+  // Use Next.js image optimization to compress for crawlers (2.8MB → ~100KB)
+  const ogImageUrl = pet.image_url
+    ? `${siteUrl}/_next/image?url=${encodeURIComponent(pet.image_url)}&w=1200&q=75`
+    : `${siteUrl}/favicon.png`
 
   return {
     title: `${pet.name} – The A Pawstrophe`,
