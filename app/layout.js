@@ -9,12 +9,12 @@ export const metadata = {
   openGraph: {
     title: 'The A Pawstrophe | Pet Adoption',
     description: 'Connecting loving families with furry friends. Every adoption saves a life.',
-    url: process.env.NEXT_PUBLIC_SITE_URL || 'https://the-a-pawstrophe.vercel.app',
+    url: process.env.NEXT_PUBLIC_SITE_URL || 'https://adoptionpage.vercel.app',
     siteName: 'The A Pawstrophe',
     type: 'website',
     images: [
       {
-        url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://the-a-pawstrophe.vercel.app'}/favicon.png`,
+        url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://adoptionpage.vercel.app'}/favicon.png`,
         width: 512,
         height: 512,
         alt: 'The A Pawstrophe Logo',
@@ -25,7 +25,7 @@ export const metadata = {
     card: 'summary',
     title: 'The A Pawstrophe | Pet Adoption',
     description: 'Connecting loving families with furry friends. Every adoption saves a life.',
-    images: [`${process.env.NEXT_PUBLIC_SITE_URL || 'https://the-a-pawstrophe.vercel.app'}/favicon.png`],
+    images: [`${process.env.NEXT_PUBLIC_SITE_URL || 'https://adoptionpage.vercel.app'}/favicon.png`],
   },
 }
 

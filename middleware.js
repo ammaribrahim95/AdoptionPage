@@ -36,7 +36,7 @@ export async function middleware(request) {
     try {
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
         const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://the-a-pawstrophe.vercel.app'
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://adoptionpage.vercel.app'
 
         if (!supabaseUrl || !supabaseKey) {
             return NextResponse.next()
