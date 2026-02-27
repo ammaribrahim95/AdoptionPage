@@ -33,7 +33,7 @@ export async function generateMetadata({ params }) {
     }
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://adoptionpage.netlify.app'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://the-a-pawstrophe.vercel.app'
   const description = pet.description
     ? pet.description.substring(0, 160)
     : `${pet.name} is looking for a forever home! Check out this adorable pet at The A Pawstrophe.`
