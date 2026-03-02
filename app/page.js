@@ -6,12 +6,15 @@ import { supabase } from '@/lib/supabaseClient'
 import { Clock, Heart, Share2, Image as ImageIcon, Check } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/hooks/useAuth'
+import { useScrollRestore } from '@/hooks/useScrollRestore'
 
 export default function HomePage() {
     const { user } = useAuth()
     const [updates, setUpdates] = useState([])
     const [loading, setLoading] = useState(true)
     const [copiedId, setCopiedId] = useState(null)
+
+    useScrollRestore(!loading)
 
     const handleShare = async (update) => {
         const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
@@ -50,7 +53,6 @@ export default function HomePage() {
     }
 
     useEffect(() => {
-        window.scrollTo(0, 0)
         const fetchUpdates = async () => {
             const { data: updatesData } = await supabase
                 .from('adoption_updates')
